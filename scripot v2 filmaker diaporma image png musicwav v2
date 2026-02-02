@@ -1,0 +1,58 @@
+D=12; X=2.0; FPS=60; W=1920; H=1080; P=0.25; OUT="clip_pan_zoom_inout.mp4"; AUD="music.wav"; \
+ls -1 *.png | sort > imgs.txt; \
+python3 - <<PY
+import shlex, subprocess, math
+D=float("$D"); X=float("$X"); FPS=int("$FPS"); W=int("$W"); H=int("$H"); P=float("$P")
+OUT="$OUT"; AUD="$AUD"
+imgs=[l.strip() for l in open("imgs.txt") if l.strip()]
+NF=max(2, int(round(D*FPS)))  # frames par image
+
+cmd=["ffmpeg","-y"]
+for f in imgs:
+    cmd += ["-loop","1","-t",str(D),"-i",f]
+cmd += ["-i",AUD]
+
+fg=[]
+for i in range(len(imgs)):
+    lr = (i % 2 == 0)   # L->R, puis R->L
+    zin = (i % 2 == 0)  # IN, puis OUT
+
+    # fraction 0..1 basée sur on (index frame sortie)
+    frac = f"(on/{NF-1})"
+
+    # zoom linéaire propre
+    zexpr = f"(1+0.06*{frac})" if zin else f"(1.06-0.06*{frac})"
+
+    # pan latéral (amplitude P)
+    xexpr = f"(iw-ow)*({P}*{frac})" if lr else f"(iw-ow)*({P}*(1-{frac}))"
+
+    # y un peu plus haut que centre pour éviter “bas centre”
+    yexpr = f"(ih-oh)*0.22"
+
+    fg.append(
+        f"[{i}:v]"
+        f"scale={W*2}:{H*2}:force_original_aspect_ratio=increase,"
+        f"zoompan=z='{zexpr}':x='{xexpr}':y='{yexpr}':d={NF}:s={W}x{H}:fps={FPS},"
+        f"format=yuv420p[v{i}]"
+    )
+
+cur="[v0]"
+t=D-X
+for i in range(1,len(imgs)):
+    fg.append(f"{cur}[v{i}]xfade=transition=fade:duration={X}:offset={t}[x{i}]")
+    cur=f"[x{i}]"
+    t += D-X
+
+fg.append(f"{cur}format=yuv420p[v]")
+
+cmd += [
+    "-filter_complex",";".join(fg),
+    "-map","[v]","-map",f"{len(imgs)}:a",
+    "-c:v","libx264","-crf","18","-preset","slow","-pix_fmt","yuv420p",
+    "-c:a","aac","-b:a","320k",
+    "-shortest",OUT
+]
+
+print(" ".join(shlex.quote(x) for x in cmd))
+subprocess.run(cmd, check=True)
+PY
