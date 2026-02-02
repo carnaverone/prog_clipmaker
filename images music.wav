@@ -1,4 +1,4 @@
-D=10; X=1.5; FPS=60; W=1920; H=1080; OUT="clip_pan_smooth.mp4"; AUD="music.wav"; \
+D=10; X=1.5; FPS=60; W=1920; H=1080; OUT="clip_pan_clean.mp4"; AUD="music.wav"; \
 ls -1 *.png | sort > imgs.txt; \
 python3 - <<PY
 import shlex, subprocess
@@ -6,31 +6,21 @@ D=float("$D"); X=float("$X"); FPS=int("$FPS"); W=int("$W"); H=int("$H")
 OUT="$OUT"; AUD="$AUD"
 imgs=[l.strip() for l in open("imgs.txt") if l.strip()]
 
+OW=int(W*2.0); OH=int(H*2.0)   # overscan 2x => pan stable (moins de jitter)
+
 cmd=["ffmpeg","-y"]
 for f in imgs:
     cmd += ["-loop","1","-t",str(D),"-i",f]
 cmd += ["-i",AUD]
 
 fg=[]
-tot = int(D*FPS)  # frames per still
-
 for i in range(len(imgs)):
-    # Overscan pour pouvoir panner sans bords noirs
-    ow = int(W*1.20)
-    oh = int(H*1.20)
-
-    # Pan LINÉAIRE: x va de 0 -> (iw-W)
-    # Zoom LINÉAIRE: 1.00 -> 1.06 sur toute la durée (très doux)
     fg.append(
         f"[{i}:v]"
-        f"scale={ow}:{oh}:force_original_aspect_ratio=increase,"
-        f"crop={ow}:{oh},fps={FPS},"
-        f"zoompan="
-        f"z='1.00+on/({tot})*0.06'"
-        f":x='(iw-{W})*on/({tot})'"
-        f":y='(ih-{H})*0.35'"
-        f":d=1:s={W}x{H}:fps={FPS},"
-        f"format=yuv420p[v{i}]"
+        f"scale={OW}:{OH}:force_original_aspect_ratio=increase,"
+        f"crop={OW}:{OH},"
+        f"crop={W}:{H}:x='(in_w-out_w)*t/{D}':y='(in_h-out_h)*0.35',"
+        f"fps={FPS},format=yuv420p[v{i}]"
     )
 
 cur="[v0]"
