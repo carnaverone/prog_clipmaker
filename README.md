@@ -311,4 +311,4 @@ Les contributions sont bienvenues ! N'hésitez pas à ouvrir une issue ou une pu
 
 ## 📄 Licence
 
-MIT License - Carnaverone Studio
+ - Carnaverone Studio
