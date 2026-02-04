@@ -1,0 +1,46 @@
+# PanZoom Slideshow - Configuration
+# Edit this file to customize default settings
+
+# Video generation settings
+video:
+  # Timing
+  duration: 10.0          # Duration per image (seconds)
+  crossfade: 2.0          # Crossfade transition duration (seconds)
+  fps: 60                 # Frames per second (30 or 60)
+  
+  # Resolution
+  width: 1920             # Output width (pixels)
+  height: 1080            # Output height (pixels)
+  
+  # Ken Burns effect
+  zoom_intensity: 0.08    # Zoom amount (0.0 = none, 0.2 = strong)
+  pan_intensity: 0.25     # Pan amount (0.0 = none, 1.0 = full)
+  zoom_direction: alternate  # in, out, alternate, random
+  pan_direction: alternate   # left, right, alternate, random
+  vertical_position: 0.3     # Y position (0=top, 0.5=center, 1=bottom)
+  
+  # Image ordering
+  shuffle: false          # Randomize image order
+  reverse: false          # Reverse order
+  
+  # Encoding quality
+  crf: 18                 # Quality (0-51, lower = better, 18-23 recommended)
+  preset: slow            # Encoding speed (ultrafast, fast, medium, slow, veryslow)
+  audio_bitrate: 320k     # Audio bitrate
+
+# Audio processing settings
+audio:
+  loudness: -14.0         # Target loudness (LUFS, -14 for streaming)
+  lra: 7.0                # Loudness range
+  true_peak: -1.5         # Maximum true peak (dB)
+  sample_rate: 44100      # Output sample rate (Hz)
+  channels: 2             # Output channels (1=mono, 2=stereo)
+  remove_silence: true    # Remove silence at start/end
+  silence_threshold: -50dB  # Silence detection threshold
+
+# Metadata
+artist: Carnaverone Studio
+genre: Instrumental
+
+# Output
+output_dir: output

@@ -1,0 +1,7 @@
+# PanZoom Slideshow - Python Dependencies
+
+# Configuration
+PyYAML>=6.0
+
+# Optional: Progress bars (uncomment to enable)
+# tqdm>=4.65.0
